@@ -1,0 +1,52 @@
+# Archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Archivos de entorno virtual
+venv/
+.env
+*.venv
+
+# Configuración del entorno
+.envrc
+
+# Archivos de bases de datos locales
+db.sqlite3
+db.sqlite3-journal
+
+# Archivos de migraciones compilados
+migrations/*
+!migrations/__init__.py
+
+# Archivos de logs y caché
+*.log
+*.pot
+*.pid
+*.seed
+*.bak
+*.swp
+*.swo
+
+# Archivos de compilación de Django
+staticfiles/
+media/
+__pycache__/
+
+# Archivos de IDEs y editores
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Archivos de Docker
+docker-compose.override.yml
+
+# Archivos de dependencias
+*.egg-info/
+*.dist-info/
+
+# Configuración de Node.js
+node_modules/
+package-lock.json
+yarn.lock
