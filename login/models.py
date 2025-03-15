@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 # Create your models here.
 
-class RegistrarUsuario(AbstractUser):
+class Usuario(AbstractUser):
     cedula = models.CharField(max_length=20, unique=True)  # Unique identifier
     email = models.EmailField(unique=True)
     username = None  # Remove username field since we're using cedula

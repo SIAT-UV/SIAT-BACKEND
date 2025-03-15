@@ -41,8 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'login',
     'rest_framework', 
+    'accidente',
 ]
-AUTH_USER_MODEL = 'login.RegistrarUsuario'  
+AUTH_USER_MODEL = 'login.Usuario'  
 
 
 MIDDLEWARE = [
