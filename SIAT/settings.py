@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'login',
     'rest_framework', 
     'accidente',
+    'rest_framework_simplejwt',
 ]
 AUTH_USER_MODEL = 'login.Usuario'  
 
@@ -75,7 +76,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'SIAT.wsgi.application'
-
+CORS_ALLOW_ALL_ORIGINS = True 
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -87,6 +88,19 @@ DATABASES = {
     }
 }
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+        'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.AllowAny',
+    ],
+}
+
+
+SIMPLE_JWT = {
+    'USER_ID_FIELD': 'cedula',
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
