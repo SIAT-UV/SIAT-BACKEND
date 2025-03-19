@@ -14,6 +14,17 @@ from pathlib import Path
 import os
 import dj_database_url
 
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+cloudinary.config( 
+    cloud_name = "dh3kwgp0z", 
+    api_key = "856853749719983", 
+    api_secret = "<dQcgHQlQw_v1OVQjoW5Qq7OX0DE>", # Click 'View API Keys' above to copy your API secret
+    secure=True
+)
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -43,8 +54,12 @@ INSTALLED_APPS = [
     'rest_framework', 
     'accidente',
     'rest_framework_simplejwt',
+    'cloudinary',
+    'cloudinary_storage',
 ]
 AUTH_USER_MODEL = 'login.Usuario'  
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 
 
 MIDDLEWARE = [
