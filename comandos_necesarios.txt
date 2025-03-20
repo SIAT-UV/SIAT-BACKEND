@@ -1,0 +1,19 @@
+COMANDOS PARA ELIMINAR MIGRACIONES ANTERIORES SIN PROBLEMAS
+find . -path "*/migrations/*.py" -not -name "__init__.py" -delete
+find . -path "*/migrations/*.pyc" -delete
+
+COMANDO PARA ACTUALIZAR EL REQUIMENTS.TXT
+pip freeze > requirements.txt
+
+COMANDO PARA CORRER EL SERVIDOR
+python manage.py runserver
+
+COMANDOS PARA EJECUTAR MIGRACIONES
+python manage.py makemigrations
+python manage.py migrate
+
+COMANDO PARA INSTALAR MODULOS
+pip install -r requirements.txt
+
+COMANDO PARA BAJAR LA BASE DE DATOS HISTORICA
+python manage.py importar_datos

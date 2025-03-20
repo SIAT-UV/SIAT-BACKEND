@@ -42,6 +42,7 @@ class Command(BaseCommand):
                     GRAVEDAD_DEL_ACCIDENTE=item.get("gravedad_del_accidente", ""),
                     CLASE_DE_VEHICULO=item.get("clase_de_vehiculo", ""),
                     ubicacion=ubicacion, 
+                    defaults={"confirmado": True} 
                 )
 
                 
