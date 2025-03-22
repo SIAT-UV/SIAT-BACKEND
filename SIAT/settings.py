@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'cloudinary',
     'cloudinary_storage',
+    'django.contrib.gis',
 ]
 AUTH_USER_MODEL = 'login.Usuario'  
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
@@ -98,8 +99,12 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / "db.sqlite3",
+        'ENGINE': 'django.contrib.gis.db.backends.postgis',  # Usar el backend de PostGIS
+        'NAME': 'siat_db',
+        'USER': 'postgres',
+        'PASSWORD': 'univalle',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
