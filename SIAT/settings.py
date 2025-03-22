@@ -21,9 +21,10 @@ import cloudinary.api
 cloudinary.config( 
     cloud_name = "dh3kwgp0z", 
     api_key = "856853749719983", 
-    api_secret = "<dQcgHQlQw_v1OVQjoW5Qq7OX0DE>", # Click 'View API Keys' above to copy your API secret
+    api_secret = "dQcgHQlQw_v1OVQjoW5Qq7OX0DE", 
     secure=True
 )
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
