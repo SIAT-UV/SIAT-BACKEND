@@ -1,8 +1,8 @@
 import locale
 from cloudinary.models import CloudinaryField
 from django.db import models
-from django.db import models
 from SIAT import settings
+from django.contrib.gis.db import models as geomodels
 
 # Create your models here.
 
@@ -11,7 +11,7 @@ class Ubicacion(models.Model):
     AREA = models.CharField(max_length=255, blank=True, null=True)
     DIRECCION_HECHO = models.CharField(max_length=255, blank=True, null=True)
     BARRIO_HECHO = models.CharField(max_length=255, blank=True, null=True)
-    Cordenada_Geografica = models.CharField(max_length=255, blank=True, null=True)  # Como string
+    coordenada_geografica = geomodels.PointField(geography=True, blank=True, null=True)
 
     def __str__(self):
         return f"{self.AREA} - {self.DIRECCION_HECHO}"
@@ -25,7 +25,7 @@ class Accidente(models.Model):
     AÑO = models.IntegerField(editable=False)
     FECHA = models.DateField()
     DIA = models.CharField(max_length=20, editable=False)
-    HORA = models.TimeField()
+    HORA = models.TimeField(null=True, blank=True)
     CONTROLES_DE_TRANSITO = models.CharField(max_length=255, blank=True, null=True)
     CLASE_DE_ACCIDENTE = models.CharField(max_length=100)
     CLASE_DE_SERVICIO = models.CharField(max_length=100)

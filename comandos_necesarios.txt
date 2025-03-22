@@ -17,3 +17,6 @@ pip install -r requirements.txt
 
 COMANDO PARA BAJAR LA BASE DE DATOS HISTORICA
 python manage.py importar_datos
+
+COMANDO SQL PARA ELIMINAR TODOS LOS ARCHIVOS DE UNA TABLA
+TRUNCATE TABLE accidente_accidente CASCADE;
