@@ -20,3 +20,21 @@ python manage.py importar_datos
 
 COMANDO SQL PARA ELIMINAR TODOS LOS ARCHIVOS DE UNA TABLA
 TRUNCATE TABLE accidente_accidente CASCADE;
+
+COMANDO SQL PARA ELIMINAR TODAS LAS TABLAS DE LA DB Y RECREAR NUEVAMENTE EL ESQUEMA
+DROP SCHEMA public CASCADE;
+CREATE SCHEMA public;
+GRANT ALL ON SCHEMA public TO postgres;
+GRANT ALL ON SCHEMA public TO public;
+
+JSON PARA REGISTRAR UN USUARIO
+{
+"cedula": "1122919783",
+ "first_name": "Juan",
+ "last_name": "Rojas",
+ "email": "Juan@gmail.com",
+ "password": "Rojasjuan08*"
+}
+
+
+

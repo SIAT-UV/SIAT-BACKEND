@@ -7,15 +7,6 @@ from django.contrib.gis.db import models as geomodels
 # Create your models here.
 
 
-class Ubicacion(models.Model):
-    AREA = models.CharField(max_length=255, blank=True, null=True)
-    DIRECCION_HECHO = models.CharField(max_length=255, blank=True, null=True)
-    BARRIO_HECHO = models.CharField(max_length=255, blank=True, null=True)
-    coordenada_geografica = geomodels.PointField(geography=True, blank=True, null=True)
-
-    def __str__(self):
-        return f"{self.AREA} - {self.DIRECCION_HECHO}"
-
 class Accidente(models.Model):
     usuario = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -31,8 +22,11 @@ class Accidente(models.Model):
     CLASE_DE_SERVICIO = models.CharField(max_length=100)
     GRAVEDAD_DEL_ACCIDENTE = models.CharField(max_length=100)
     CLASE_DE_VEHICULO = models.CharField(max_length=100)
+    AREA = models.CharField(max_length=255, blank=True, null=True)
+    DIRECCION_HECHO = models.CharField(max_length=255, blank=True, null=True)
+    BARRIO_HECHO = models.CharField(max_length=255, blank=True, null=True)
+    coordenada_geografica = geomodels.PointField(geography=True, blank=True, null=True)
 
-    ubicacion = models.ForeignKey(Ubicacion, on_delete=models.CASCADE, null=True, blank=True)
     imagen = CloudinaryField('image', blank=True, null=True)
     fecha_reporte = models.DateTimeField(auto_now_add=True)
     confirmado = models.BooleanField(default=False) 

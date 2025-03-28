@@ -5,7 +5,6 @@ __pycache__/
 
 # Archivos de entorno virtual
 venv/
-.env
 *.venv
 
 # Configuración del entorno

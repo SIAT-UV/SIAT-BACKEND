@@ -1,13 +1,8 @@
 from rest_framework import serializers
-from .models import Accidente, Ubicacion
+from .models import Accidente
 
-class UbicacionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Ubicacion
-        fields = ('AREA', 'DIRECCION_HECHO', 'BARRIO_HECHO', 'coordenada_geografica')
 
 class AccidenteSerializer(serializers.ModelSerializer):
-    ubicacion = UbicacionSerializer()
     usuario = serializers.PrimaryKeyRelatedField(read_only=True)  # Se asigna automáticamente
     imagen = serializers.ImageField(required=False)
 
@@ -22,16 +17,14 @@ class AccidenteSerializer(serializers.ModelSerializer):
             'CLASE_DE_SERVICIO',
             'GRAVEDAD_DEL_ACCIDENTE',
             'CLASE_DE_VEHICULO',
-            'ubicacion',
+            'AREA', 
+            'DIRECCION_HECHO', 
+            'BARRIO_HECHO', 
+            'coordenada_geografica',
             'imagen',
-
         )
 
     def create(self, validated_data):
-        # Extraer datos anidados de ubicación
-        ubicacion_data = validated_data.pop('ubicacion', None)
-        ubicacion = None
-        if ubicacion_data:
-            ubicacion = Ubicacion.objects.create(**ubicacion_data)
-        accidente = Accidente.objects.create(ubicacion=ubicacion, **validated_data)
+        # Crear el objeto Accidente directamente
+        accidente = Accidente.objects.create(**validated_data)
         return accidente
