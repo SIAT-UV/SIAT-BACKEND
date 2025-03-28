@@ -2,6 +2,8 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.hashers import make_password
 from .models import Usuario
+from rest_framework_simplejwt.views import TokenObtainPairView
+
 
 class RegistroUsuarioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -19,4 +21,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             user = self.user
             data['nombre'] = user.get_full_name() 
             return data
-    
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
