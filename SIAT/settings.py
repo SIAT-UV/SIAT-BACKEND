@@ -12,8 +12,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
-import dj_database_url
-
+"import dj_database_url"
+import environ
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
@@ -62,6 +62,10 @@ INSTALLED_APPS = [
 ]
 AUTH_USER_MODEL = 'login.Usuario'  
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
+env = environ.Env()
+environ.Env.read_env()
+GOOGLE_MAPS_API_KEY = env('GOOGLE_MAPS_API_KEY')
 
 
 

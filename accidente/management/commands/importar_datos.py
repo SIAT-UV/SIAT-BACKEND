@@ -3,7 +3,7 @@ import json
 from datetime import datetime, time
 from django.core.management.base import BaseCommand
 from django.contrib.gis.geos import GEOSGeometry
-from accidente.models import Accidente, Ubicacion
+from accidente.models import Accidente
 
 API_URL = "https://www.datos.gov.co/resource/ezt8-5wyj.json"
 
@@ -34,14 +34,7 @@ class Command(BaseCommand):
                 else:
                     point = None
 
-                # Crear o recuperar Ubicacion usando defaults para el campo geoespacial
-                ubicacion, _ = Ubicacion.objects.get_or_create(
-                    AREA=item.get("area", ""),
-                    DIRECCION_HECHO=item.get("direccion_hecho", ""),
-                    BARRIO_HECHO=item.get("barrio_hecho", ""),
-                    defaults={"coordenada_geografica": point}
-                )
-
+                # Guardar el registro en la base de datos                   
                 accidente, created = Accidente.objects.update_or_create(
                     AÑO=item.get("a_o", 0),
                     FECHA=fecha,
@@ -52,8 +45,13 @@ class Command(BaseCommand):
                     CLASE_DE_SERVICIO=item.get("clase_de_servicio", ""),
                     GRAVEDAD_DEL_ACCIDENTE=item.get("gravedad_del_accidente", ""),
                     CLASE_DE_VEHICULO=item.get("clase_de_vehiculo", ""),
-                    ubicacion=ubicacion, 
-                    defaults={"confirmado": True} 
+                    AREA=item.get("area", ""),
+                    DIRECCION_HECHO=item.get("direccion_hecho", ""),
+                    BARRIO_HECHO=item.get("barrio_hecho", ""),
+                    defaults={
+                        "coordenada_geografica": point,
+                        "confirmado": True
+                    }
                 )
 
                 if created:
