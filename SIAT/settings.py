@@ -93,6 +93,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'SIAT.wsgi.application'
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_ALL_ORIGINS = True 
 
 # Database
