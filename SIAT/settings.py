@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/5.1/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.1/ref/settings/
 """
-
+from datetime import timedelta
 from pathlib import Path
 import os
 "import dj_database_url"
@@ -99,8 +99,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'SIAT.wsgi.application'
-CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_ALL_ORIGINS = True 
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
@@ -125,9 +124,21 @@ REST_FRAMEWORK = {
     ],
 }
 
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_ALL_ORIGINS = True 
 
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'cedula',
+    'AUTH_COOKIE': 'access_token',          # Nombre de la cookie para el access token
+    'AUTH_COOKIE_HTTP_ONLY': True,          # HttpOnly (no accesible por JS)
+    'AUTH_COOKIE_SECURE': False,             # Solo enviar en HTTPS (True en producción)
+    'AUTH_COOKIE_SAMESITE': 'None',          # Protección contra CSRF
+    'AUTH_COOKIE_PATH': '/',                # Ruta donde la cookie es válida
+    'AUTH_COOKIE_DOMAIN': None,             # Dominio (ajusta si usas subdominios)
+    
+    # Tiempos de expiración
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
 
 # Password validation
