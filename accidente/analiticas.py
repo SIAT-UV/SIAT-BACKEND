@@ -147,3 +147,4 @@ class FilterAccidentByTypeServiceView(APIView):
                 {"error": f"Error interno del servidor: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+

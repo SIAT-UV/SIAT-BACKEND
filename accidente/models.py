@@ -65,5 +65,13 @@ class Aprobaciones(models.Model):
             self.accidente.confirmado = True
             self.accidente.save()
     
+class IntersectionCluster(geomodels.Model):
+    centroide = geomodels.PointField(geography=True)
+    accident_count = models.IntegerField(default=0)
+    fecha_actualizacion = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Intersección en {self.centroide.coords} con {self.accident_count} accidentes"
+        
 
 

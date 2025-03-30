@@ -1,3 +1,4 @@
+from rest_framework_gis.serializers import GeoFeatureModelSerializer
 from rest_framework import serializers
 from .models import Accidente
 
@@ -28,3 +29,4 @@ class AccidenteSerializer(serializers.ModelSerializer):
         # Crear el objeto Accidente directamente
         accidente = Accidente.objects.create(**validated_data)
         return accidente
+
