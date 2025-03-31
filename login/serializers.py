@@ -16,12 +16,17 @@ class RegistroUsuarioSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-        def validate(self, attrs):
-            data = super().validate(attrs)
-            user = self.user
-            data['nombre'] = user.get_full_name() 
-            return data
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['cedula'] = user.cedula  # Agregar cedula al payload del token
+        return token
+
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        user = self.user
+        data['id'] = user.cedula  # Usar cedula como "id" en la respuesta
+        data['username'] = f"{user.first_name} {user.last_name}"
+        return data
 
 
-class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer
