@@ -1,23 +1,44 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 from .serializers import AccidenteSerializer
 from rest_framework.parsers import MultiPartParser, FormParser
 
 
 class AccidenteCreateView(APIView):
-    permission_classes = [IsAuthenticated]
-    parser_classes = [MultiPartParser, FormParser]  # Para manejar archivos
-
-
+    parser_classes = [MultiPartParser, FormParser]
     def post(self, request, format=None):
+
+                # Verificar si el header Authorization está presente
+        if 'HTTP_AUTHORIZATION' not in request.META:
+            return Response(
+                {"CODE_ERR": "INVALID_CREDENTIALS"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        # Verificar si el token comienza con 'Bearer '
+        auth_header = request.META['HTTP_AUTHORIZATION']
+        if not auth_header.startswith('Bearer '):
+            return Response(
+                {"CODE_ERR": "INVALID_TOKEN_FORMAT", "message": "El formato del token debe ser 'Bearer <token>'"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        # Verificar si el usuario está autenticado
+        if not request.user.is_authenticated:
+            return Response(
+                {"CODE_ERR": "INVALID_CREDENTIALS", "message": "Credenciales inválidas o token expirado"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        
+        # Crear el serializer con los datos de la solicitud
         serializer = AccidenteSerializer(data=request.data)
         if serializer.is_valid():
             # Se asigna el usuario autenticado (instancia de Usuario)
             accidente = serializer.save(usuario=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        # Si el serializer no es válido, se devuelven los errores, notificando que el usuario no ingreso los datos correctamente
+        return Response({"CODE_ERR": "Datos no ingresados correctamente"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 

@@ -19,12 +19,15 @@ def registro_api(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CustomTokenObtainPairView(TokenObtainPairView):
-    serializer_class = CustomTokenObtainPairSerializer  
-
+    serializer_class = CustomTokenObtainPairSerializer
     def post(self, request, *args, **kwargs):
-        response = super().post(request, *args, **kwargs)
+        try:
+            response = super().post(request, *args, **kwargs)
+        except Exception as e:
+            return Response({"error": "No existe el usuario"}, status=401)
         
         # Guardar access_token en cookie
+        """
         response.set_cookie(
             key='access_token',
             value=response.data['access'],
@@ -33,7 +36,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             samesite='Lax',
             max_age=15 * 60,
         )
-        
+        """
         # Guardar refresh_token en cookie
         response.set_cookie(
             key='refresh_token',
@@ -44,9 +47,9 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             max_age=24 * 60 * 60,
         )
         
-        # Eliminar tokens del cuerpo de la respuesta (quedan 'id' y 'username')
-        del response.data['access']
-        #del response.data['refresh']
+        # Eliminar tokens del cuerpo de la respuesta (queda 'username')
+        #del response.data['access']
+        del response.data['refresh']
         
         return response
 
@@ -56,86 +59,90 @@ User = get_user_model()
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         refresh_token = request.COOKIES.get('refresh_token')
-        data = request.data.copy()
-        data['refresh'] = refresh_token  # Clave correcta: "refresh"
+        
+        if not refresh_token:
+            return Response(
+                {"CODE_ERR": "REFRESH_TOKEN_REQUIRED"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+
+        data = {'refresh': refresh_token}
         
         try:
             response = super().post(request, data=data, *args, **kwargs)
-        except Exception as e:
-            return Response({"error": "Token inválido"}, status=401)
-        
-        if 'access' in response.data:
-            access_token = response.data['access']
-            try:
+            
+            if 'access' in response.data:
+                access_token = response.data['access']
                 payload = jwt.decode(
                     access_token,
                     settings.SECRET_KEY,
                     algorithms=['HS256']
                 )
-                cedula = payload.get('cedula')  # Obtener cedula del payload
+                
+                # Obtener usuario
+                cedula = payload.get('cedula')
                 user = Usuario.objects.get(cedula=cedula)
                 
-                # Agregar datos del usuario a la respuesta
-                response.data['id'] = user.cedula
-                response.data['username'] = f"{user.first_name} {user.last_name}"
+                # Limpiar tokens del cuerpo
+                #del response.data['access']
+                if 'refresh' in response.data:
+                    del response.data['refresh']
                 
-                # Actualizar cookie del access_token
+                # Agregar datos de usuario
+                response.data['user'] = {
+                    #'cedula': user.cedula,
+                    'nombre_completo': f"{user.first_name} {user.last_name}"
+                }
+                
+                # Actualizar cookies
                 response.set_cookie(
                     key='access_token',
                     value=access_token,
                     httponly=True,
-                    secure=False,
+                    secure=not settings.DEBUG,  # True en producción
                     samesite='Lax',
                     max_age=15 * 60,
                 )
-            except Usuario.DoesNotExist:
-                return Response({"error": "Usuario no encontrado"}, status=404)
-            except (jwt.ExpiredSignatureError, jwt.DecodeError):
-                return Response({"error": "Token inválido"}, status=401)
-        
-        return response
-    def post(self, request, *args, **kwargs):
-        # Obtener refresh_token de la cookie
-        refresh_token = request.COOKIES.get('refresh_token')
-        
-        # Crear una copia mutable de request.data y usar la clave correcta "refresh"
-        data = request.data.copy()
-        data['refresh'] = refresh_token  
-        
-        try:
-            response = super().post(request, data=data, *args, **kwargs)
-        except (InvalidToken, TokenError) as e:
-            logger.error(f"Error al refrescar token: {e}")
-            return Response({"error": "Token inválido"}, status=401)
-        
-        if 'access' in response.data:
-            access_token = response.data['access']
-            try:
-                # Decodificar el token para obtener el user_id (clave correcta)
-                payload = jwt.decode(
-                    access_token,
-                    settings.SECRET_KEY,
-                    algorithms=['HS256']
-                )
-                cedula = payload.get('cedula')  # ¡Clave correcta!
-                user = User.objects.get(cedula=cedula)
                 
-                # Agregar datos del usuario a la respuesta
-                response.data['cedula'] = user.cedula  # Ajusta según tu modelo
-                response.data['username'] = f"{user.first_name} {user.last_name}"
-                
-                # Actualizar cookie del access_token
-                response.set_cookie(
-                    key='access_token',
-                    value=access_token,
-                    httponly=True,
-                    secure=False,
-                    samesite='Lax',
-                    max_age=15 * 60,
-                )
-            except User.DoesNotExist:
-                logger.error("Usuario no encontrado")
-            except (jwt.ExpiredSignatureError, jwt.DecodeError) as e:
-                logger.error(f"Error decodificando token: {e}")
-        print(response.data)
-        return response
+                # Rotar refresh token si está configurado
+                if hasattr(settings, 'SIMPLE_JWT') and settings.SIMPLE_JWT.get('ROTATE_REFRESH_TOKENS', False):
+                    new_refresh_token = response.data.get('refresh')
+                    if new_refresh_token:
+                        response.set_cookie(
+                            key='refresh_token',
+                            value=new_refresh_token,
+                            httponly=True,
+                            secure=not settings.DEBUG,
+                            samesite='Lax',
+                            max_age=24 * 60 * 60 * 60 * 60 * 60 * 60,
+                        )
+
+            return response
+
+        except jwt.ExpiredSignatureError:
+            logger.error("Refresh token expirado")
+            return Response(
+                {"CODE_ERR": "REFRESH_TOKEN_EXPIRED"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+            
+        except jwt.DecodeError:
+            logger.error("Token inválido")
+            return Response(
+                {"CODE_ERR": "INVALID_TOKEN"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+            
+        except Usuario.DoesNotExist:
+            logger.error("Usuario no encontrado")
+            return Response(
+                {"CODE_ERR": "USER_NOT_FOUND"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+            
+        except Exception as e:
+            logger.critical(f"Error inesperado: {str(e)}")
+            return Response(
+                {"CODE_ERR": "SERVER_ERROR"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

@@ -44,7 +44,7 @@ class FilterAccidentByMonthView(APIView):
 class CountAccidentByMonthView(APIView):
     def get(self, request):
         fecha_str = request.GET.get('fecha')
-        
+        fecha_str = fecha_str+"-01" 
         if not fecha_str:
             return Response(
                 {"error": "Parámetro 'fecha' requerido (formato: YYYY-MM-DD)"},
@@ -82,7 +82,6 @@ class RecentlyAccidentView(APIView):
             serializer = AccidenteSerializer(accidentes, many=True)
             
             return Response({
-                "count": len(serializer.data),
                 "results": serializer.data
             }, status=status.HTTP_200_OK)
             
