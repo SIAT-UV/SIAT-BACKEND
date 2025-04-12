@@ -19,14 +19,15 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
-        token['cedula'] = user.cedula  # Agregar cedula al payload del token
+        token['username'] = f"{user.first_name} {user.last_name}"
+        #token['cedula'] = user.cedula  # Agregar cedula al payload del token
         return token
 
     def validate(self, attrs):
         data = super().validate(attrs)
-        user = self.user
-        data['id'] = user.cedula  # Usar cedula como "id" en la respuesta
-        data['username'] = f"{user.first_name} {user.last_name}"
+        #user = self.user
+        #data['id'] = user.cedula  # Usar cedula como "id" en la respuesta
+        #data['username'] = f"{user.first_name} {user.last_name}"
         return data
 
 
