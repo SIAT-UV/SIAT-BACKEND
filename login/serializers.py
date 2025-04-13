@@ -20,7 +20,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def get_token(cls, user):
         token = super().get_token(user)
         #token['username'] = f"{user.first_name} {user.last_name}"
-        #token['cedula'] = user.cedula  # Agregar cedula al payload del token
+        token['cedula'] = user.cedula  # Agregar cedula al payload del token
         return token
 
     def validate(self, attrs):

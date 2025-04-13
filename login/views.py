@@ -82,7 +82,8 @@ class CustomTokenRefreshView(TokenRefreshView):
                 # Obtener usuario
                 cedula = payload.get('cedula')
                 user = Usuario.objects.get(cedula=cedula)
-                
+                print(user.get_full_name())
+
                 # Limpiar tokens del cuerpo
                 #del response.data['access']
                 if 'refresh' in response.data:
@@ -91,7 +92,7 @@ class CustomTokenRefreshView(TokenRefreshView):
                 # Agregar datos de usuario
                 response.data['user'] = {
                     #'cedula': user.cedula,
-                    'nombre_completo': f"{user.first_name} {user.last_name}"
+                    'username': f"{user.first_name} {user.last_name}"
                 }
                 
                 # Actualizar cookies
@@ -134,6 +135,7 @@ class CustomTokenRefreshView(TokenRefreshView):
             )
             
         except Usuario.DoesNotExist:
+            print("Usuario no encontrado")
             logger.error("Usuario no encontrado")
             return Response(
                 {"CODE_ERR": "USER_NOT_FOUND"},
