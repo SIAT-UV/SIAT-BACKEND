@@ -130,16 +130,14 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'cedula',
-    'AUTH_COOKIE': 'access_token',          # Nombre de la cookie para el access token
-    'AUTH_COOKIE_HTTP_ONLY': True,          # HttpOnly (no accesible por JS)
-    'AUTH_COOKIE_SECURE': False,             # Solo enviar en HTTPS (True en producción)
-    'AUTH_COOKIE_SAMESITE': 'None',          # Protección contra CSRF
-    'AUTH_COOKIE_PATH': '/',                # Ruta donde la cookie es válida
-    'AUTH_COOKIE_DOMAIN': None,             # Dominio (ajusta si usas subdominios)
-    
-    # Tiempos de expiración
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
+    'AUTH_COOKIE': 'access_token',
+    'AUTH_COOKIE_HTTP_ONLY': True,
+    'AUTH_COOKIE_SECURE': not DEBUG,  # True en producción
+    'AUTH_COOKIE_SAMESITE': 'None' if not DEBUG else 'Lax',  # None solo si Secure=True
+    'AUTH_COOKIE_PATH': '/',
+    'AUTH_COOKIE_DOMAIN': None,
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
 }
