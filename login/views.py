@@ -106,17 +106,16 @@ class CustomTokenRefreshView(TokenRefreshView):
                 """
 
                 # Rotar refresh token si está configurado
-                if hasattr(settings, 'SIMPLE_JWT') and settings.SIMPLE_JWT.get('ROTATE_REFRESH_TOKENS', False):
-                    new_refresh_token = response.data.get('refresh')
-                    if new_refresh_token:
-                        response.set_cookie(
-                        key='refresh_token',
-                        value=response.data['refresh'],
-                        httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-                        secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-                        samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
-                        max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
-                        )
+                new_refresh_token = response.data.get('refresh')
+                if new_refresh_token:
+                    response.set_cookie(
+                    key='refresh_token',
+                    value=response.data['refresh'],
+                    httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                    secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                    samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                    max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
+                    )
                 # Limpiar refresh token del cuerpo
                     if 'refresh' in response.data:
                         del response.data['refresh']
@@ -128,21 +127,21 @@ class CustomTokenRefreshView(TokenRefreshView):
             logger.error("Token inválido")
             return Response(
                 {"CODE_ERR": "INVALID_TOKEN"},
-                status=status.HTTP_401_UNAUTHORIZED
+                status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
         except jwt.ExpiredSignatureError:
             logger.error("Refresh token expirado")
             return Response(
                 {"CODE_ERR": "REFRESH_TOKEN_EXPIRED"},
-                status=status.HTTP_401_UNAUTHORIZED
+                status=status.HTTP_406_NOT_ACCEPTABLE
             )
             
         except jwt.DecodeError:
             logger.error("Error de decodificacion")
             return Response(
                 {"CODE_ERR": "DECODE_ERROR"},
-                status=status.HTTP_401_UNAUTHORIZED
+                status=status.HTTP_400_BAD_REQUEST
             )
             
         except Usuario.DoesNotExist:
