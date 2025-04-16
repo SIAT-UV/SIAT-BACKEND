@@ -106,17 +106,16 @@ class CustomTokenRefreshView(TokenRefreshView):
                 """
 
                 # Rotar refresh token si está configurado
-                if hasattr(settings, 'SIMPLE_JWT') and settings.SIMPLE_JWT.get('ROTATE_REFRESH_TOKENS', False):
-                    new_refresh_token = response.data.get('refresh')
-                    if new_refresh_token:
-                        response.set_cookie(
-                        key='refresh_token',
-                        value=response.data['refresh'],
-                        httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-                        secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-                        samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
-                        max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
-                        )
+                new_refresh_token = response.data.get('refresh')
+                if new_refresh_token:
+                    response.set_cookie(
+                    key='refresh_token',
+                    value=response.data['refresh'],
+                    httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                    secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                    samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                    max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
+                    )
                 # Limpiar refresh token del cuerpo
                     if 'refresh' in response.data:
                         del response.data['refresh']
