@@ -127,21 +127,21 @@ class CustomTokenRefreshView(TokenRefreshView):
             logger.error("Token inválido")
             return Response(
                 {"CODE_ERR": "INVALID_TOKEN"},
-                status=status.HTTP_401_UNAUTHORIZED
+                status=status.HTTP_406_NOT_ACCEPTABLE
             )
 
         except jwt.ExpiredSignatureError:
             logger.error("Refresh token expirado")
             return Response(
                 {"CODE_ERR": "REFRESH_TOKEN_EXPIRED"},
-                status=status.HTTP_401_UNAUTHORIZED
+                status=status.HTTP_406_NOT_ACCEPTABLE
             )
             
         except jwt.DecodeError:
             logger.error("Error de decodificacion")
             return Response(
                 {"CODE_ERR": "DECODE_ERROR"},
-                status=status.HTTP_401_UNAUTHORIZED
+                status=status.HTTP_400_BAD_REQUEST
             )
             
         except Usuario.DoesNotExist:
