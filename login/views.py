@@ -24,8 +24,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         try:
             response = super().post(request, *args, **kwargs)
         except Exception as e:
-            return Response({"error": "No existe el usuario"}, status=401)
-        
+            return Response({"CODE_ERR": "No existe el usuario"}, status=401)
         # Guardar access_token en cookie
         """
         response.set_cookie(
@@ -87,8 +86,6 @@ class CustomTokenRefreshView(TokenRefreshView):
 
                 # Limpiar tokens del cuerpo
                 #del response.data['access']
-                if 'refresh' in response.data:
-                    del response.data['refresh']
                 
                 # Agregar datos de usuario
                 response.data['user'] = {
@@ -96,30 +93,43 @@ class CustomTokenRefreshView(TokenRefreshView):
                     'username': f"{user.first_name} {user.last_name}"
                 }
                 
-                # Actualizar cookies
+                # Actualizar cookies access
+                """
                 response.set_cookie(
                     key='access_token',
                     value=access_token,
-                    httponly=True,
-                    secure=not settings.DEBUG,  # True en producción
-                    samesite='Lax',
-                    max_age=15 * 60,
+                    httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                    secure= settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],  # True en producción
+                    samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                    max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds(),
                 )
-                
+                """
+
                 # Rotar refresh token si está configurado
                 if hasattr(settings, 'SIMPLE_JWT') and settings.SIMPLE_JWT.get('ROTATE_REFRESH_TOKENS', False):
                     new_refresh_token = response.data.get('refresh')
                     if new_refresh_token:
                         response.set_cookie(
-                            key='refresh_token',
-                            value=new_refresh_token,
-                            httponly=True,
-                            secure=not settings.DEBUG,
-                            samesite='Lax',
-                            max_age=24 * 60 * 60 * 60 * 60 * 60 * 60,
+                        key='refresh_token',
+                        value=response.data['refresh'],
+                        httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                        secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                        samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                        max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
                         )
-
+                # Limpiar refresh token del cuerpo
+                    if 'refresh' in response.data:
+                        del response.data['refresh']
             return response
+        # Manejo de errores:
+
+        #excepcion si el token es blacklisted
+        except InvalidToken:
+            logger.error("Token inválido")
+            return Response(
+                {"CODE_ERR": "INVALID_TOKEN"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
 
         except jwt.ExpiredSignatureError:
             logger.error("Refresh token expirado")
@@ -129,9 +139,9 @@ class CustomTokenRefreshView(TokenRefreshView):
             )
             
         except jwt.DecodeError:
-            logger.error("Token inválido")
+            logger.error("Error de decodificacion")
             return Response(
-                {"CODE_ERR": "INVALID_TOKEN"},
+                {"CODE_ERR": "DECODE_ERROR"},
                 status=status.HTTP_401_UNAUTHORIZED
             )
             

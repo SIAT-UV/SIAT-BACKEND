@@ -12,22 +12,22 @@ class AccidenteCreateView(APIView):
                 # Verificar si el header Authorization está presente
         if 'HTTP_AUTHORIZATION' not in request.META:
             return Response(
-                {"CODE_ERR": "INVALID_CREDENTIALS"},
-                status=status.HTTP_401_UNAUTHORIZED
+                {"CODE_ERR": "AUTHORIZATION_HEADER_MISSING"},
+                status=status.HTTP_403_FORBIDDEN
             )
         
         # Verificar si el token comienza con 'Bearer '
         auth_header = request.META['HTTP_AUTHORIZATION']
         if not auth_header.startswith('Bearer '):
             return Response(
-                {"CODE_ERR": "INVALID_TOKEN_FORMAT", "message": "El formato del token debe ser 'Bearer <token>'"},
+                {"CODE_ERR": "INVALID_TOKEN_FORMAT"},
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
         # Verificar si el usuario está autenticado
         if not request.user.is_authenticated:
             return Response(
-                {"CODE_ERR": "INVALID_CREDENTIALS", "message": "Credenciales inválidas o token expirado"},
+                {"CODE_ERR": "INVALID_CREDENTIALS"},
                 status=status.HTTP_401_UNAUTHORIZED
             )
         
