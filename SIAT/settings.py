@@ -131,6 +131,7 @@ CORS_ALLOW_ALL_ORIGINS = True
 SIMPLE_JWT = {
     'USER_ID_FIELD': 'cedula',
     'AUTH_COOKIE': 'access_token',
+    'AUTH_COOKIE_REFRESH': 'refresh_token',
     'AUTH_COOKIE_HTTP_ONLY': True,
     'AUTH_COOKIE_SECURE': not DEBUG,  # True en producción
     'AUTH_COOKIE_SAMESITE': 'None' if not DEBUG else 'Lax',  # None solo si Secure=True
