@@ -2,9 +2,10 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from .serializers import RegistroUsuarioSerializer, CustomTokenObtainPairSerializer, CustomTokenRefreshSerializer
+from .serializers import RegistroUsuarioSerializer, CustomTokenObtainPairSerializer, CustomTokenRefreshSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer
+from rest_framework.views import APIView
 from django.conf import settings
-from rest_framework_simplejwt.exceptions import AuthenticationFailed, InvalidToken, TokenError
+from rest_framework_simplejwt.exceptions import AuthenticationFailed, TokenError
 from django.contrib.auth import get_user_model
 import jwt 
 import logging
@@ -26,7 +27,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             response = super().post(request, *args, **kwargs)
             
             # Configurar cookies con parámetros desde settings
-            self._set_access_cookie(response)
+            #self._set_access_cookie(response)
             self._set_refresh_cookie(response)
             
             # Limpiar tokens del cuerpo de respuesta
@@ -36,24 +37,16 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             
         except AuthenticationFailed as e:
             return Response(
-                {"CODE_ERR": "INVALID_CREDENTIALS", "message": "Cédula o contraseña incorrectas"},
+                {"CODE_ERR": "INVALID_CREDENTIALS"},
                 status=status.HTTP_401_UNAUTHORIZED
             )
         except Exception as e:
             return Response(
-                {"CODE_ERR": "AUTH_ERROR", "message": "Error en autenticación"},
+                {"CODE_ERR": "AUTH_ERROR"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
-    def _set_access_cookie(self, response):
-        response.set_cookie(
-            key='access_token',
-            value=response.data['access'],
-            httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-            secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-            samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
-            max_age=settings.SIMPLE_JWT['ACCESS_TOKEN_LIFETIME'].total_seconds(),
-        )
+
 
     def _set_refresh_cookie(self, response):
         response.set_cookie(
@@ -124,6 +117,7 @@ class CustomTokenRefreshView(TokenRefreshView):
             payload = jwt.decode(tokens['access'], settings.SECRET_KEY, algorithms=['HS256'])
             user = Usuario.objects.get(cedula=payload['cedula'])
             response.data = {
+                'access': tokens['access'],
                 'user': {
                     'nombre': f"{user.first_name} {user.last_name}",
                     #'cedula': user.cedula
@@ -134,6 +128,19 @@ class CustomTokenRefreshView(TokenRefreshView):
             response({"CODE_ERR": "INTERNAL_SERVER_ERROR"},status=status.HTTP_500_INTERNAL_SERVER_ERROR)
  
         return response
-            
-           
+
+class PasswordResetRequestView(APIView):
+    def post(self, request):
+        serializer = PasswordResetRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            return Response({"message": "Código OTP enviado al correo electrónico."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+class PasswordResetConfirmView(APIView):
+    def post(self, request):
+        serializer = PasswordResetConfirmSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Contraseña restablecida exitosamente."}, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         
