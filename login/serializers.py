@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
+from rest_framework_simplejwt.exceptions import InvalidToken
 from django.contrib.auth.hashers import make_password
 from .models import Usuario
-from rest_framework_simplejwt.views import TokenObtainPairView
 
 
 class RegistroUsuarioSerializer(serializers.ModelSerializer):
@@ -30,4 +30,19 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data['username'] = f"{user.first_name} {user.last_name}"
         return data
 
+class CustomTokenRefreshSerializer(TokenRefreshSerializer):
+    def __init__(self, *args, **kwargs):
+        data = kwargs.get('data', {})
+        # Si no hay 'refresh' en body, lo tomamos de la cookie
+        if 'refresh' not in data:
+            request = kwargs['context']['request']
+            data = data.copy()
+            data['refresh'] = request.COOKIES.get('refresh_token')
+            kwargs['data'] = data
+        super().__init__(*args, **kwargs)
 
+    def validate(self, attrs):
+        # Validar que realmente exista en la cookie
+        if not attrs.get('refresh'):
+            raise InvalidToken('No refresh token cookie set')
+        return super().validate(attrs)
