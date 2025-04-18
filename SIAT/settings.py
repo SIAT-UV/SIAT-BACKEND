@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'cloudinary_storage',
     'django.contrib.gis',
     'corsheaders',
+    'anymail',
 ]
 AUTH_USER_MODEL = 'login.Usuario'  
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
@@ -183,3 +184,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+EMAIL_BACKEND = "anymail.backends.mailjet.EmailBackend"
+ANYMAIL = {
+    "MAILJET_API_KEY": "fbe268d1231387d5d4feff27d5f53320",
+    "MAILJET_SECRET_KEY": "013fa08552270a109430b42baef50774",
+}
+DEFAULT_FROM_EMAIL = 'MiApp <siatsoporte@zohomail.com>'
