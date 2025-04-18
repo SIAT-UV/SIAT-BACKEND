@@ -119,10 +119,8 @@ class CustomTokenRefreshView(TokenRefreshView):
             user = Usuario.objects.get(cedula=payload['cedula'])
             response.data = {
                 'access': tokens['access'],
-                'user': {
-                    'nombre': f"{user.first_name} {user.last_name}",
+                'username': f"{user.first_name} {user.last_name}",
                     #'cedula': user.cedula
-                }
             }
         except Exception as e:
             logger.error(f"DecodeError / UsuarioError: {e}")
