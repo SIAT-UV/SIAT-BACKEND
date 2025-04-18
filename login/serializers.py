@@ -2,10 +2,25 @@ from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer, TokenRefreshSerializer
 from rest_framework_simplejwt.exceptions import InvalidToken
 from django.contrib.auth.password_validation import validate_password
-from django.core.mail import send_mail
 from django.utils import timezone
 from .models import Usuario
+import smtplib
+from email.mime.text import MIMEText
 
+with open('claveApp') as f:
+    claveApp = f.read().strip()
+
+def send_email_smtp(subject, body, to_email):
+    from_email = "soportersiat@gmail.com"
+    app_password = claveApp
+    msg = MIMEText(body)
+    msg['Subject'] = subject
+    msg['From'] = from_email
+    msg['To'] = to_email
+
+    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+        server.login(from_email, app_password)
+        server.send_message(msg)
 
 class RegistroUsuarioSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -63,6 +78,7 @@ class CustomTokenRefreshSerializer(TokenRefreshSerializer):
         return super().validate(attrs)
 
             
+
 class PasswordResetRequestSerializer(serializers.Serializer):
     email = serializers.EmailField()
 
@@ -72,14 +88,15 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         except Usuario.DoesNotExist:
             raise serializers.ValidationError("No existe un usuario con este correo electrónico.")
         user.generate_otp()
-        send_mail(
+        send_email_smtp(
             subject="Código de recuperación de contraseña",
-            message=f"Tu código de recuperación es: {user.otp}",
-            from_email="noreply@tudominio.com",
-            recipient_list=[user.email],
+            body=f"Tu código de recuperación es: {user.otp}",
+            to_email=user.email
         )
         return value
-    
+
+
+
 class PasswordResetConfirmSerializer(serializers.Serializer):
     email = serializers.EmailField()
     otp = serializers.CharField(max_length=6)
@@ -106,5 +123,5 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         user.set_password(self.validated_data["new_password"])
         user.otp = None
         user.otp_expiration = None
-        user.save()
+        user.save(update_fields=['password', 'otp', 'otp_expiration'])
         return user

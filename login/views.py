@@ -42,6 +42,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
             )
         except Exception as e:
             return Response(
+
                 {"CODE_ERR": "AUTH_ERROR"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
@@ -59,7 +60,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         )
 
     def _clean_response_data(self, response):
-        response.data.pop('refresh', None)        
+        response.data.pop('refresh', None)    
         return response
 
 
