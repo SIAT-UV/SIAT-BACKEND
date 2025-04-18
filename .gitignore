@@ -49,3 +49,8 @@ docker-compose.override.yml
 node_modules/
 package-lock.json
 yarn.lock
+
+# claves de API y secretos
+client_secret.json
+token.json
+claveApp
