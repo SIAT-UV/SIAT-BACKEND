@@ -4,23 +4,8 @@ from rest_framework_simplejwt.exceptions import InvalidToken
 from django.contrib.auth.password_validation import validate_password
 from django.utils import timezone
 from .models import Usuario
-import smtplib
-from email.mime.text import MIMEText
+from utils.email import send_email
 
-with open('claveApp') as f:
-    claveApp = f.read().strip()
-
-def send_email_smtp(subject, body, to_email):
-    from_email = "soportersiat@gmail.com"
-    app_password = claveApp
-    msg = MIMEText(body)
-    msg['Subject'] = subject
-    msg['From'] = from_email
-    msg['To'] = to_email
-
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-        server.login(from_email, app_password)
-        server.send_message(msg)
 
 class RegistroUsuarioSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True)
@@ -88,7 +73,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         except Usuario.DoesNotExist:
             raise serializers.ValidationError("No existe un usuario con este correo electrónico.")
         user.generate_otp()
-        send_email_smtp(
+        send_email(
             subject="Código de recuperación de contraseña",
             body=f"Tu código de recuperación es: {user.otp}",
             to_email=user.email
