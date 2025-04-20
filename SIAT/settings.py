@@ -15,10 +15,22 @@ import os
 "import dj_database_url"
 import environ
 import cloudinary
-import cloudinary.uploader
-import cloudinary.api
-env = environ.Env()
-environ.Env.read_env()
+
+
+
+
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+env = environ.Env(
+    # Configura casting y valores por defecto, por ejemplo:
+    DEBUG=(bool, False)
+)
+
+env.read_env(os.path.join(BASE_DIR, '.env'))
+SECRET_KEY = env('SECRETKEY')
 
 cloudinary.config( 
     cloud_name = "dh3kwgp0z", 
@@ -27,21 +39,11 @@ cloudinary.config(
     secure=True
 )
 
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
-
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = env('SECRET_KEY')
-
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
+
 
 
 # Application definition
@@ -65,7 +67,6 @@ INSTALLED_APPS = [
 ]
 AUTH_USER_MODEL = 'login.Usuario'  
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
 
 GOOGLE_MAPS_API_KEY = env('GOOGLE_MAPS_API_KEY')
 

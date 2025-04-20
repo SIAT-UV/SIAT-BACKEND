@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: nombre-de-tu-app
+    name: SIAT_BACKEND
     env: python
     buildCommand: "./build.sh"
-    startCommand: "gunicorn nombre_de_tu_proyecto.wsgi:application"
+    startCommand: "gunicorn SIAT.wsgi:application"
