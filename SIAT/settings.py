@@ -17,11 +17,13 @@ import environ
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+env = environ.Env()
+environ.Env.read_env()
 
 cloudinary.config( 
     cloud_name = "dh3kwgp0z", 
     api_key = "856853749719983", 
-    api_secret = "dQcgHQlQw_v1OVQjoW5Qq7OX0DE", 
+    api_secret = env('CLOUDINARY_API_SECRET'), 
     secure=True
 )
 
@@ -34,10 +36,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-k+epr)cir*7c%=^)1r---uec(up)*t=^v$h&*g_k!nu_)rth(-'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -64,8 +66,7 @@ INSTALLED_APPS = [
 AUTH_USER_MODEL = 'login.Usuario'  
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 GOOGLE_MAPS_API_KEY = os.getenv("GOOGLE_MAPS_API_KEY")
-env = environ.Env()
-environ.Env.read_env()
+
 GOOGLE_MAPS_API_KEY = env('GOOGLE_MAPS_API_KEY')
 
 

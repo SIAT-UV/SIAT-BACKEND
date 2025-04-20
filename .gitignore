@@ -54,3 +54,4 @@ yarn.lock
 client_secret.json
 token.json
 claveApp
+.env
