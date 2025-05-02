@@ -58,3 +58,4 @@ claveApp
 render.yml
 *staticfiles/
 llave-git-encrypt
+.env
