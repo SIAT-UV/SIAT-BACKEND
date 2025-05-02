@@ -1,8 +1,10 @@
 import smtplib
 from email.mime.text import MIMEText
-
-with open('claveApp') as f:
-    claveApp = f.read().strip()
+import environ
+# Cargar variables de entorno
+env = environ.Env()
+environ.Env.read_env()
+claveApp = env('GMAILAPPKEY')
 
 def send_email(subject, body, to_email):
     from_email = "soportersiat@gmail.com"

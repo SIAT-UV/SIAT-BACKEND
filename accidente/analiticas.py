@@ -77,10 +77,24 @@ class RecentlyAccidentView(APIView):
             # Obtener los últimos 3 accidentes confirmados
             accidentes = Accidente.objects.filter(
                 confirmado=True
-            ).order_by('-fecha_reporte')[:3]
+            ).order_by('-FECHA')[:3]
             
             serializer = AccidenteSerializer(accidentes, many=True)
             
+            #solo dejamos los campos: fecha + hora, BARRIO_HECHO, CLASE_DE_ACCIDENTE, CLASE_DE_SERVICIO, GRAVEDAD_DEL_ACCIDENTE
+            for item in serializer.data:
+                item.pop('usuario', None)
+                item.pop('CONTROLES_DE_TRANSITO', None)
+                item.pop('CLASE_DE_VEHICULO', None)
+                item.pop('coordenada_geografica', None)
+                item.pop('DIRECCION_HECHO', None)
+                item.pop('imagen', None)
+                item.pop('AREA', None)
+                #quitamos fecha y hora y la agregamos como un solo campo
+                item['fecha_hora'] = f"{item['FECHA']} {item['HORA']}"
+                item.pop('FECHA', None)
+                item.pop('HORA', None)
+                
             return Response({
                 "results": serializer.data
             }, status=status.HTTP_200_OK)
