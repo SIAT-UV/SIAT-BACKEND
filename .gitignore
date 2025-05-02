@@ -55,3 +55,6 @@ client_secret.json
 token.json
 claveApp
 .env
+render.yml
+*staticfiles/
+# Archivos de pruebas
