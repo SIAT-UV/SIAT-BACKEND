@@ -268,7 +268,7 @@ class AccidentsByUserView(APIView):
                 results.append(item_copy)
 
             return Response({
-                "count": queryset.count(),
+                "count of accidents": queryset.count(),
                 "results": results
             }, status=status.HTTP_200_OK)
 
