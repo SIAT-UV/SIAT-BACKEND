@@ -10,4 +10,5 @@ urlpatterns = [
     path('accidentes/accidentByType', FilterAccidentByTypeView.as_view(), name='accidente-type'),
     path('accidentes/accidentByService', FilterAccidentByTypeServiceView.as_view(), name='accidente-service'),
     path('accidentes/highRiskIntersection',ShowHighRiskView.as_view(), name='high-risk-intersection'),
+    path('accidentes/accidentByUser', AccidentsByUserView.as_view(), name='accidente-user'),
 ]

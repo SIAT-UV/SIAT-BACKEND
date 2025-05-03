@@ -5,7 +5,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .serializers import RegistroUsuarioSerializer, CustomTokenObtainPairSerializer, CustomTokenRefreshSerializer, PasswordResetRequestSerializer, PasswordResetConfirmSerializer
 from rest_framework.views import APIView
 from django.conf import settings
-from rest_framework_simplejwt.exceptions import AuthenticationFailed, TokenError
+from rest_framework_simplejwt.exceptions import TokenError
 from django.contrib.auth import get_user_model
 import jwt 
 import logging
@@ -23,42 +23,27 @@ class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
     def post(self, request, *args, **kwargs):
-        try:
             response = super().post(request, *args, **kwargs)
-            
+
             # Configurar cookies con parámetros desde settings
             #self._set_access_cookie(response)
             self._set_refresh_cookie(response)
             
             # Limpiar tokens del cuerpo de respuesta
             self._clean_response_data(response)
-            
             return response
             
-        except AuthenticationFailed as e:
-            return Response(
-                {"CODE_ERR": "INVALID_CREDENTIALS"},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-        except Exception as e:
-            return Response(
-
-                {"CODE_ERR": "AUTH_ERROR"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
-
-
-
     def _set_refresh_cookie(self, response):
-        response.set_cookie(
-            key='refresh_token',
-            value=response.data['refresh'],
-            httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-            secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-            samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
-            max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
-        )
-
+        if 'refresh' in response.data:
+            response.set_cookie(
+                key='refresh_token',
+                value=response.data['refresh'],
+                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
+                max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
+            )
+    
     def _clean_response_data(self, response):
         response.data.pop('refresh', None)    
         return response
@@ -108,9 +93,9 @@ class CustomTokenRefreshView(TokenRefreshView):
             response.set_cookie(
                 key='refresh_token',
                 value=tokens['refresh'],
-                httponly=True,
-                secure=True,
-                samesite='None',
+                httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
+                secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
+                samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
                 max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
             )
 
@@ -142,4 +127,21 @@ class PasswordResetConfirmView(APIView):
             serializer.save()
             return Response({"message": "Contraseña restablecida exitosamente."}, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
+# Vista para cerrar sesión
+# obtiene el token de acceso y extrae del payload el cedula
+class logOut(APIView):
+    def post(self, request):
+        try:
+            # Obtener el token de acceso del encabezado de autorización
+            request.data
+            # Eliminar el token de acceso y el token de actualización
+            response = Response({"message": "Logout exitoso"}, status=status.HTTP_200_OK)
+            response.delete_cookie('refresh_token')
+
+            return response
+        except Exception as e:
+            return Response(
+                {"error": f"Error al cerrar sesión: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

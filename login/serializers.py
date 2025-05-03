@@ -4,7 +4,9 @@ from rest_framework_simplejwt.exceptions import InvalidToken
 from django.contrib.auth.password_validation import validate_password
 from django.utils import timezone
 from .models import Usuario
-from utils.email import send_email
+from SIAT.utils.email import send_email
+from rest_framework.exceptions import AuthenticationFailed
+
 
 
 class RegistroUsuarioSerializer(serializers.ModelSerializer):
@@ -39,12 +41,19 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs):
-        data = super().validate(attrs)
+        try:
+            data = super().validate(attrs)
+            
+        except AuthenticationFailed as e:
+            # Si el error es de credenciales inválidas, lo manejamos aquí
+            # lanzamos el error: CODE_ERR: INVALID CREDENTIALS
+            raise AuthenticationFailed({"CODE_ERR": "INVALID_CREDENTIALS"}, code='authentication')
+        # Si las credenciales son válidas, obtenemos el token
         user = self.user
         #data['id'] = user.cedula  # Usar cedula como "id" en la respuesta
         data['username'] = f"{user.first_name} {user.last_name}"
         return data
-
+    
 class CustomTokenRefreshSerializer(TokenRefreshSerializer):
     def __init__(self, *args, **kwargs):
         data = kwargs.get('data', {})
@@ -71,7 +80,7 @@ class PasswordResetRequestSerializer(serializers.Serializer):
         try:
             user = Usuario.objects.get(email=value)
         except Usuario.DoesNotExist:
-            raise serializers.ValidationError("No existe un usuario con este correo electrónico.")
+            raise serializers.ValidationError({"CODE_ERR": "USER_NOT_FOUND"}, status_code=404)   
         user.generate_otp()
         send_email(
             subject="Código de recuperación de contraseña",
@@ -96,11 +105,11 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         try:
             user = Usuario.objects.get(email=email)
         except Usuario.DoesNotExist:
-            raise serializers.ValidationError("Usuario no encontrado.")
+            raise serializers.ValidationError({"CODE_ERR": "USER_NOT_FOUND"}, status_code=404)
         if user.otp != data.get("otp"):
-            raise serializers.ValidationError("Código OTP inválido.")
+            raise serializers.ValidationError("CODE_ERR: INVALID_OTP", status_code=400)
         if user.otp_expiration < timezone.now():
-            raise serializers.ValidationError("El código OTP ha expirado.")
+            raise serializers.ValidationError("CODE_ERR: OTP_EXPIRED", status_code=400)
         return data
 
     def save(self):
@@ -109,4 +118,4 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         user.otp = None
         user.otp_expiration = None
         user.save(update_fields=['password', 'otp', 'otp_expiration'])
-        return user
+        return user 
