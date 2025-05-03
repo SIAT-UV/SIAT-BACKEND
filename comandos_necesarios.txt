@@ -36,5 +36,8 @@ JSON PARA REGISTRAR UN USUARIO
  "password": "Rojasjuan08*"
 }
 
+COMANDO PARA CREAR AMBIENTE:
+python3 -m venv venv
+
 
 
