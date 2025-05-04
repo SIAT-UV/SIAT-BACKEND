@@ -1,10 +1,13 @@
 from rest_framework import serializers
 from .models import Accidente
-
+from geopy.geocoders import Nominatim
+from django.contrib.gis.geos import Point
 
 class AccidenteSerializer(serializers.ModelSerializer):
     usuario = serializers.PrimaryKeyRelatedField(read_only=True)  # Se asigna automáticamente
     imagen = serializers.ImageField(required=False)
+    lat = serializers.FloatField(required=False)
+    lng = serializers.FloatField(required=False)
 
     class Meta:
         model = Accidente
@@ -22,11 +25,28 @@ class AccidenteSerializer(serializers.ModelSerializer):
             'BARRIO_HECHO', 
             'coordenada_geografica',
             'imagen',
+            'lat',
+            'lng',
         )
     def create(self, validated_data):
-        # Crear el objeto Accidente directamente
-        accidente = Accidente.objects.create(**validated_data)
-        return accidente
+        lat = validated_data.pop('lat', None)
+        lng = validated_data.pop('lng', None)
+
+        if lat is not None and lng is not None:
+            punto = Point(lng, lat)
+        else:
+            direccion = validated_data.get('DIRECCION_HECHO')
+            if not direccion:
+                raise serializers.ValidationError("Debe proporcionar una dirección si no hay coordenadas.")
+            geolocator = Nominatim(user_agent="siat_app")
+            location = geolocator.geocode(direccion)
+            if not location:
+                raise serializers.ValidationError("No se pudo geolocalizar la dirección.")
+            punto = Point(location.longitude, location.latitude)
+
+        validated_data['coordenada_geografica'] = punto
+        return Accidente.objects.create(**validated_data)
+    
 class AccidenteListSerializer(serializers.ModelSerializer):
     lat = serializers.SerializerMethodField()  # Latitud calculada
     lon = serializers.SerializerMethodField()  # Longitud calculada
