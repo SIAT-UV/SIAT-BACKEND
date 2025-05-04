@@ -48,6 +48,6 @@ class AccidenteListView(generics.ListAPIView):
 
         # Incluimos el conteo en la respuesta
         return Response({
-            'Número de accidentes graficados': count,
+            'count': count,
             'accidentes': serializer.data
         })
