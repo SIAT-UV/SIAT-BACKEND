@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Accidente
-from geopy.geocoders import Nominatim
+from django.conf import settings
+import googlemaps
 from django.contrib.gis.geos import Point
 
 class AccidenteSerializer(serializers.ModelSerializer):
@@ -38,11 +39,15 @@ class AccidenteSerializer(serializers.ModelSerializer):
             direccion = validated_data.get('DIRECCION_HECHO')
             if not direccion:
                 raise serializers.ValidationError("Debe proporcionar una dirección si no hay coordenadas.")
-            geolocator = Nominatim(user_agent="siat_app")
-            location = geolocator.geocode(direccion)
-            if not location:
+
+            gmaps = googlemaps.Client(key=settings.GOOGLE_MAPS_API_KEY)
+            geocode_result = gmaps.geocode(direccion)
+
+            if not geocode_result:
                 raise serializers.ValidationError("No se pudo geolocalizar la dirección.")
-            punto = Point(location.longitude, location.latitude)
+
+            location = geocode_result[0]['geometry']['location']
+            punto = Point(location['lng'], location['lat'])
 
         validated_data['coordenada_geografica'] = punto
         return Accidente.objects.create(**validated_data)
