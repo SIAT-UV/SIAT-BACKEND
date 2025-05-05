@@ -9,6 +9,23 @@ from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import JSONParser
 
+
+def serialize_accidentes(data):
+    serialized = []
+    for item in data:
+        item_copy = item.copy()
+        item_copy.pop('usuario', None)
+        item_copy.pop('CONTROLES_DE_TRANSITO', None)
+        item_copy.pop('CLASE_DE_SERVICIO', None)
+        item_copy.pop('coordenada_geografica', None)
+        item_copy.pop('DIRECCION_HECHO', None)
+        item_copy.pop('imagen', None)
+        item_copy.pop('AREA', None)
+        #item_copy['fecha_hora'] = f"{item_copy.pop('FECHA', '')} {item_copy.pop('HORA', '')}"
+        serialized.append(item_copy)
+    return serialized
+
+
 class FilterAccidentByMonthView(APIView):
     def get(self, request):
         fecha_str = request.GET.get('fecha')  # Obtener la fecha del request
@@ -37,25 +54,13 @@ class FilterAccidentByMonthView(APIView):
         
         serializer = AccidenteSerializer(accidentes, many=True)
         
-        for item in serializer.data:
-            item.pop('usuario', None)
-            item.pop('CONTROLES_DE_TRANSITO', None)
-                #item.pop('CLASE_DE_VEHICULO', None)
-            item.pop('CLASE_DE_SERVICIO', None)
-            item.pop('coordenada_geografica', None)
-            item.pop('DIRECCION_HECHO', None)
-            item.pop('imagen', None)
-            item.pop('AREA', None)
-                #quitamos fecha y hora y la agregamos como un solo campo
-            item['fecha_hora'] = f"{item['FECHA']} {item['HORA']}"
-            item.pop('FECHA', None)
-            item.pop('HORA', None)    
+        resultado = serialize_accidentes(serializer.data) 
 
         return Response({
             "count": accidentes.count(),
             "mes": fecha.month,
             "año": fecha.year,
-            "resultados": serializer.data
+            "resultados": resultado
         })
     
 # NUMERO DE ACCIDENTES POR MES
@@ -102,22 +107,10 @@ class RecentlyAccidentView(APIView):
             #solo dejamos los campos:
             # Fecha + hora, lugar, tipo de accidente, tipo de vehículo, gravedad
 
-            for item in serializer.data:
-                item.pop('usuario', None)
-                item.pop('CONTROLES_DE_TRANSITO', None)
-                #item.pop('CLASE_DE_VEHICULO', None)
-                item.pop('CLASE_DE_SERVICIO', None)
-                item.pop('coordenada_geografica', None)
-                item.pop('DIRECCION_HECHO', None)
-                item.pop('imagen', None)
-                item.pop('AREA', None)
-                #quitamos fecha y hora y la agregamos como un solo campo
-                item['fecha_hora'] = f"{item['FECHA']} {item['HORA']}"
-                item.pop('FECHA', None)
-                item.pop('HORA', None)
-                
+            resultado = serialize_accidentes(serializer.data) 
+
             return Response({
-                "results": serializer.data
+                "results": resultado
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
@@ -142,24 +135,11 @@ class FilterAccidentByTypeView(APIView):
                 CLASE_DE_ACCIDENTE__iexact=clase_accidente
             )
             serializer = AccidenteSerializer(queryset, many=True)
-            
-            for item in serializer.data:
-                item.pop('usuario', None)
-                item.pop('CONTROLES_DE_TRANSITO', None)
-                #item.pop('CLASE_DE_VEHICULO', None)
-                item.pop('CLASE_DE_SERVICIO', None)
-                item.pop('coordenada_geografica', None)
-                item.pop('DIRECCION_HECHO', None)
-                item.pop('imagen', None)
-                item.pop('AREA', None)
-                #quitamos fecha y hora y la agregamos como un solo campo
-                item['fecha_hora'] = f"{item['FECHA']} {item['HORA']}"
-                item.pop('FECHA', None)
-                item.pop('HORA', None)
+            resultado = serialize_accidentes(serializer.data) 
             
             return Response({
                 "count": queryset.count(),
-                "results": serializer.data
+                "results": resultado
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
@@ -184,23 +164,11 @@ class FilterAccidentByTypeServiceView(APIView):
                 CLASE_DE_SERVICIO__iexact=clase_servicio
             )
             serializer = AccidenteSerializer(queryset, many=True)
-            for item in serializer.data:
-                item.pop('usuario', None)
-                item.pop('CONTROLES_DE_TRANSITO', None)
-                #item.pop('CLASE_DE_VEHICULO', None)
-                item.pop('CLASE_DE_SERVICIO', None)
-                item.pop('coordenada_geografica', None)
-                item.pop('DIRECCION_HECHO', None)
-                item.pop('imagen', None)
-                item.pop('AREA', None)
-                #quitamos fecha y hora y la agregamos como un solo campo
-                item['fecha_hora'] = f"{item['FECHA']} {item['HORA']}"
-                item.pop('FECHA', None)
-                item.pop('HORA', None)
+            resultado = serialize_accidentes(serializer.data) 
             
             return Response({
                 "count": queryset.count(),
-                "results": serializer.data
+                "results": resultado
             }, status=status.HTTP_200_OK)
             
         except Exception as e:
@@ -254,22 +222,11 @@ class AccidentsByUserView(APIView):
             )
             serializer = AccidenteSerializer(queryset, many=True)
 
-            results = []
-            for item in serializer.data:
-                item_copy = item.copy()
-                item_copy.pop('usuario', None)
-                item_copy.pop('CONTROLES_DE_TRANSITO', None)
-                item_copy.pop('CLASE_DE_SERVICIO', None)
-                item_copy.pop('coordenada_geografica', None)
-                item_copy.pop('DIRECCION_HECHO', None)
-                item_copy.pop('imagen', None)
-                item_copy.pop('AREA', None)
-                item_copy['fecha_hora'] = f"{item_copy.pop('FECHA', '')} {item_copy.pop('HORA', '')}"
-                results.append(item_copy)
-
+            results = serialize_accidentes(serializer.data) 
+            #results = serializer.data
             return Response({
-                "count of accidents": queryset.count(),
-                "results": results
+                "total de accidentes": queryset.count(),
+                "resultado": results
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -277,3 +234,37 @@ class AccidentsByUserView(APIView):
                 {"CODE_ERR": "SERVER_ERROR", "detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+class AccidentByYear(APIView):
+    def get(self, request):
+        year = request.GET.get('year')
+        if not year:
+            return Response(
+                {"error": "Parámetro 'year' requerido (formato: YYYY)"},
+                status=400
+            )
+        
+        try:
+            # Convertir el string a objeto date
+            year = int(year)
+        except ValueError:
+            return Response(
+                {"error": "Formato de año inválido. Use YYYY."},
+                status=400
+            )
+        
+        # Filtrar por mes y año de la fecha proporcionada
+        accidentes = Accidente.objects.filter(
+            confirmado=True,
+            FECHA__year=year
+        )
+        
+        serializer = AccidenteSerializer(accidentes, many=True)
+        
+        resultado = serialize_accidentes(serializer.data)     
+
+        return Response({
+            "count": accidentes.count(),
+            "año": year,
+            "resultados": resultado
+        })
