@@ -217,8 +217,7 @@ class AccidentsByUserView(APIView):
 
         try:
             queryset = Accidente.objects.filter(
-                usuario__cedula=cedula,
-                confirmado=True
+                usuario__cedula=cedula
             )
             serializer = AccidenteSerializer(queryset, many=True)
 
@@ -254,17 +253,13 @@ class AccidentByYear(APIView):
             )
         
         # Filtrar por mes y año de la fecha proporcionada
-        accidentes = Accidente.objects.filter(
+        numAccidentes = Accidente.objects.filter(
             confirmado=True,
             FECHA__year=year
-        )
-        
-        serializer = AccidenteSerializer(accidentes, many=True)
-        
-        resultado = serialize_accidentes(serializer.data)     
+        ).count()
+      
 
         return Response({
-            "count": accidentes.count(),
-            "año": year,
-            "resultados": resultado
+            "Total de accidentes": numAccidentes,
+            "año": year
         })
