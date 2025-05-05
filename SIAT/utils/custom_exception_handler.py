@@ -15,7 +15,7 @@ def custom_exception_handler(exc, context):
         # También puedes personalizar otros mensajes aquí:
         elif mensaje == "Invalid token.":
             response.data = {"CODE_ERR": "INVALID_TOKEN."}
-            response.status_code = status.HTTP_401_UNAUTHORIZED 
+            response.status_code = status.HTTP_403_FORBIDDEN
 
         elif mensaje == "Given token not valid for any token type":
             response.data = {"CODE_ERR": "INVALID_TOKEN."}
@@ -24,4 +24,8 @@ def custom_exception_handler(exc, context):
         elif mensaje == "Token is blacklisted":
             response.data = {"CODE_ERR": "TOKEN_IS_BLACKLISTED."}
             response.status_code = status.HTTP_401_UNAUTHORIZED
+        # Mensaje cuando no esta autorizado
+        elif mensaje == "Unauthorized":
+            response.data = {"CODE_ERR": "UNAUTHORIZED."}
+            response.status_code = status.HTTP_403_FORBIDDEN
     return response
