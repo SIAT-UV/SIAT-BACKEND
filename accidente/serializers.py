@@ -13,7 +13,6 @@ class AccidenteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Accidente
         fields = (
-            'id',
             'usuario',
             'FECHA',
             'HORA',
@@ -30,7 +29,7 @@ class AccidenteSerializer(serializers.ModelSerializer):
             'lat',
             'lng',
         )
-        
+
     def create(self, validated_data):
         lat = validated_data.pop('lat', None)
         lng = validated_data.pop('lng', None)
