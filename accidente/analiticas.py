@@ -25,7 +25,6 @@ def serialize_accidentes(data):
         serialized.append(item_copy)
     return serialized
 
-
 class FilterAccidentByMonthView(APIView):
     def get(self, request):
         fecha_str = request.GET.get('fecha')  # Obtener la fecha del request
@@ -98,9 +97,7 @@ class RecentlyAccidentView(APIView):
     def get(self, request):
         try:
             # Obtener los últimos 3 accidentes confirmados
-            accidentes = Accidente.objects.filter(
-                confirmado=True
-            ).order_by('-FECHA')[:3]
+            accidentes = Accidente.objects.filter().order_by('-FECHA')[:3]
             
             serializer = AccidenteSerializer(accidentes, many=True)
             
