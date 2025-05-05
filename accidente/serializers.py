@@ -13,6 +13,7 @@ class AccidenteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Accidente
         fields = (
+            'id',
             'usuario',
             'FECHA',
             'HORA',
@@ -28,7 +29,31 @@ class AccidenteSerializer(serializers.ModelSerializer):
             'imagen',
             'lat',
             'lng',
+            'total_aprobaciones',
+            'confirmado',
+            'fecha_reporte',
         )
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        fecha_obj = instance.fecha_reporte
+        fecha_formateada = fecha_obj.strftime('%Y-%m-%d') if fecha_obj else None
+        return {
+            "ID de reporte": rep["id"],
+            "Fecha de reporte": fecha_formateada,
+            "Fecha del accidente": rep["FECHA"],
+            "Hora del accidente": rep["HORA"],
+            "Control de transito": rep["CONTROLES_DE_TRANSITO"],
+            "Clase de accidente": rep["CLASE_DE_ACCIDENTE"],
+            "Clase de servicio": rep["CLASE_DE_SERVICIO"],
+            "Gravedad del accidente": rep["GRAVEDAD_DEL_ACCIDENTE"],
+            "Clase de Vehículo": rep["CLASE_DE_VEHICULO"],
+            "Área del accidente": rep["AREA"],
+            "Barrio": rep["BARRIO_HECHO"],
+            "Dirección": rep["DIRECCION_HECHO"],
+            "Numero de aprobaciones": instance.total_aprobaciones(),
+            "Confirmado": rep["confirmado"],
+            #"Fecha y Hora": f'{rep["FECHA"]} {rep["HORA"]}',
+        }
     def create(self, validated_data):
         lat = validated_data.pop('lat', None)
         lng = validated_data.pop('lng', None)
