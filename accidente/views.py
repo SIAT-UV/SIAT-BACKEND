@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.db import DatabaseError 
 from rest_framework import generics
 from .models import Accidente
+from SIAT.utils.email import send_email
 
 class AccidenteCreateView(APIView):
     # vista protegida
@@ -20,6 +21,30 @@ class AccidenteCreateView(APIView):
             if serializer.is_valid():
                 # Se asigna el usuario autenticado (instancia de Usuario)
                 accidente = serializer.save(usuario=request.user)
+                # Crear cuerpo del correo con los datos del accidente
+                datos = serializer.validated_data
+                cuerpo = f"""
+                    Se ha registrado un nuevo accidente de tránsito con la siguiente información:
+
+                    - Fecha: {datos.get('FECHA')}
+                    - Hora: {datos.get('HORA')}
+                    - Controles de Tránsito: {datos.get('CONTROLES_DE_TRANSITO')}
+                    - Clase de Accidente: {datos.get('CLASE_DE_ACCIDENTE')}
+                    - Clase de Servicio: {datos.get('CLASE_DE_SERVICIO')}
+                    - Gravedad: {datos.get('GRAVEDAD_DEL_ACCIDENTE')}
+                    - Vehículo: {datos.get('CLASE_DE_VEHICULO')}
+                    - Área: {datos.get('AREA')}
+                    - Dirección: {datos.get('DIRECCION_HECHO')}
+                    - Barrio: {datos.get('BARRIO_HECHO')}
+                    - Coordenadas: {datos.get('coordenada_geografica')}
+
+                    Gracias por usar el sistema SIAT.
+                    """
+                # Correo del usuario autenticado
+                correo_destino = request.user.email
+                send_email("Confirmación de Registro de Accidente", cuerpo, correo_destino)
+
+
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             # Si el serializer no es válido, se devuelven los errores, notificando que el usuario no ingreso los datos correctamente
         except DatabaseError as e:
