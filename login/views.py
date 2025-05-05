@@ -135,7 +135,7 @@ class PasswordResetConfirmView(APIView):
 class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    def get(self, request):
         try:
             refresh_token = request.COOKIES.get('refresh_token')
 

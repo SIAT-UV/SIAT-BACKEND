@@ -94,6 +94,3 @@ class AccidenteListSerializer(serializers.ModelSerializer):
         if obj.coordenada_geografica:
             return obj.coordenada_geografica.x
         return None
-
-    
-
