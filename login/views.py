@@ -10,6 +10,8 @@ from django.contrib.auth import get_user_model
 import jwt 
 import logging
 from .models import Usuario
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 
 @api_view(['POST'])
 def registro_api(request):
@@ -129,19 +131,30 @@ class PasswordResetConfirmView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # Vista para cerrar sesión
-# obtiene el token de acceso y extrae del payload el cedula
-class logOut(APIView):
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         try:
-            # Obtener el token de acceso del encabezado de autorización
-            request.data
-            # Eliminar el token de acceso y el token de actualización
+            refresh_token = request.COOKIES.get('refresh_token')
+
+            if refresh_token is None:
+                return Response({"error": "No se proporcionó token de actualización"}, status=status.HTTP_400_BAD_REQUEST)
+
+            token = RefreshToken(refresh_token)
+            token.blacklist()  # Blacklisteamos el token
+
             response = Response({"message": "Logout exitoso"}, status=status.HTTP_200_OK)
             response.delete_cookie('refresh_token')
+            
 
             return response
+
+        except TokenError as e:
+            logger.error(f"TokenError al intentar blacklistear: {e}")
+            return Response({"error": "Token inválido o ya expirado"}, status=status.HTTP_400_BAD_REQUEST)
+
         except Exception as e:
-            return Response(
-                {"error": f"Error al cerrar sesión: {str(e)}"},
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR
-            )
+            logger.exception(f"Error inesperado al hacer logout: {e}")
+            return Response({"error": "Error al cerrar sesión"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

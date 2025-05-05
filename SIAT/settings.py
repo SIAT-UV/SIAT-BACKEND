@@ -141,7 +141,7 @@ SIMPLE_JWT = {
     'AUTH_COOKIE_SAMESITE': 'None' if not DEBUG else 'Lax',  # None solo si Secure=True
     'AUTH_COOKIE_PATH': '/',
     'AUTH_COOKIE_DOMAIN': None,
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=2),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
     'ROTATE_REFRESH_TOKENS': True,
     'BLACKLIST_AFTER_ROTATION': True,
