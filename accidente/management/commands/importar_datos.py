@@ -7,6 +7,10 @@ from accidente.models import Accidente
 
 API_URL = "https://www.datos.gov.co/resource/ezt8-5wyj.json"
 
+
+
+
+#la conexion entre la API y la base de datos se realiza a través de un comando de Django
 class Command(BaseCommand):
     help = "Importar datos de accidentes desde la API"
 
@@ -65,7 +69,7 @@ class Command(BaseCommand):
             return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%f").date()
         except ValueError:
             return None  # Retorna None si la fecha no es válida
-
+    # Se agrega la función para convertir la hora
     def parse_time(self, time_str):
         """Convierte una hora en formato HH:MM:SS o HH:MM:SS AM/PM a un objeto time de Python."""
         if not time_str or time_str.strip().lower() in ["no informa", ""]:
