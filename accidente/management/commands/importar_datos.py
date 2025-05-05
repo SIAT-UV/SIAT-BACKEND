@@ -54,6 +54,7 @@ class Command(BaseCommand):
                     }
                 )
 
+
                 if created:
                     self.stdout.write(self.style.SUCCESS(f"Registro agregado: {accidente}"))
         else:
@@ -65,7 +66,9 @@ class Command(BaseCommand):
             return datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S.%f").date()
         except ValueError:
             return None  # Retorna None si la fecha no es válida
+        
 
+    #se implementa la conexion automatica de la base de datos .gov con la base de datos local
     def parse_time(self, time_str):
         """Convierte una hora en formato HH:MM:SS o HH:MM:SS AM/PM a un objeto time de Python."""
         if not time_str or time_str.strip().lower() in ["no informa", ""]:
