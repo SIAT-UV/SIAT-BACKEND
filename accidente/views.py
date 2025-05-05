@@ -7,43 +7,27 @@ from rest_framework.permissions import IsAuthenticated
 from django.db import DatabaseError 
 from rest_framework import generics
 from .models import Accidente
-import traceback
 
 class AccidenteCreateView(APIView):
+    # vista protegida
     permission_classes = [IsAuthenticated]
+    # Se especifica que la vista acepta archivos y formularios
     parser_classes = [MultiPartParser, FormParser]
-
     def post(self, request, format=None):
-        print("===== NUEVA SOLICITUD DE REGISTRO DE ACCIDENTE =====")
-        print("Datos recibidos:", request.data)
-        print("Usuario autenticado:", request.user)
-
+        # Crear el serializer con los datos de la solicitud
         try:
             serializer = AccidenteSerializer(data=request.data)
             if serializer.is_valid():
-                print("Serializer válido. Procediendo a guardar el accidente...")
+                # Se asigna el usuario autenticado (instancia de Usuario)
                 accidente = serializer.save(usuario=request.user)
-                print("Accidente guardado con éxito:", accidente)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
-            else:
-                print("Errores de validación del serializer:", serializer.errors)
-                return Response({
-                    "CODE_ERR": "VALIDATION_ERROR",
-                    "errors": serializer.errors
-                }, status=status.HTTP_400_BAD_REQUEST)
-
+            # Si el serializer no es válido, se devuelven los errores, notificando que el usuario no ingreso los datos correctamente
         except DatabaseError as e:
-            print("Error al guardar en base de datos:", str(e))
-            traceback.print_exc()
             return Response({"CODE_ERR": "DB_SAVE_ERROR"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
         except Exception as e:
-            print("Excepción inesperada:", str(e))
-            traceback.print_exc()
-            return Response({
-                "CODE_ERR": "SERVER_ERROR",
-                "details": str(e)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            # Manejo de excepciones específicas
+            return Response({"CODE_ERR": "SERVER_ERROR"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        return Response({"CODE_ERR": "Datos no ingresados correctamente"}, status=status.HTTP_400_BAD_REQUEST)
 
 class AccidenteListView(generics.ListAPIView):
     serializer_class = AccidenteListSerializer
