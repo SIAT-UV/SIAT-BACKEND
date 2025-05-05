@@ -7,6 +7,9 @@ from accidente.models import Accidente
 
 API_URL = "https://www.datos.gov.co/resource/ezt8-5wyj.json"
 
+
+
+
 #la conexion entre la API y la base de datos se realiza a través de un comando de Django
 class Command(BaseCommand):
     help = "Importar datos de accidentes desde la API"
