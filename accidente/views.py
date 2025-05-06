@@ -50,7 +50,6 @@ class AccidenteCreateView(APIView):
         except DatabaseError as e:
             return Response({"CODE_ERR": "DB_SAVE_ERROR"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
-            # Manejo de excepciones específicas
             return Response({"CODE_ERR": "SERVER_ERROR"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response({"CODE_ERR": "Datos no ingresados correctamente"}, status=status.HTTP_400_BAD_REQUEST)
 

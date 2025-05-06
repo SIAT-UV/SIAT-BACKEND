@@ -12,20 +12,25 @@ def custom_exception_handler(exc, context):
             response.data = {"CODE_ERR": "AUTHENTICATION_CREDENTIALS_WERE_NOT_PROVIDED."}
             response.status_code = status.HTTP_403_FORBIDDEN 
 
-        # También puedes personalizar otros mensajes aquí:
         elif mensaje == "Invalid token.":
             response.data = {"CODE_ERR": "INVALID_TOKEN."}
             response.status_code = status.HTTP_403_FORBIDDEN
+        
+        elif response.data.get("code") == "token_not_valid":
+            for msg in response.data.get("messages", []):
+                if msg.get("message") == "Token is expired" and msg.get("token_class") == "AccessToken":
+                    response.data = {"CODE_ERR": "ACCESS_TOKEN_EXPIRED."}
+                    response.status_code = status.HTTP_403_FORBIDDEN
+                    break
+
 
         elif mensaje == "Given token not valid for any token type":
-            response.data = {"CODE_ERR": "INVALID_TOKEN."}
+            response.data = {"CODE_ERR": "NOT_VALID_TOKEN_TYPE."}
             response.status_code = status.HTTP_401_UNAUTHORIZED
     
         elif mensaje == "Token is blacklisted":
             response.data = {"CODE_ERR": "TOKEN_IS_BLACKLISTED."}
             response.status_code = status.HTTP_401_UNAUTHORIZED
-        # Mensaje cuando no esta autorizado
-        elif mensaje == "Unauthorized":
-            response.data = {"CODE_ERR": "UNAUTHORIZED."}
-            response.status_code = status.HTTP_403_FORBIDDEN
+
+
     return response
