@@ -6,8 +6,14 @@ from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.permissions import IsAuthenticated 
 from django.db import DatabaseError 
 from rest_framework import generics
-from .models import Accidente
+from .models import Accidente, Aprobaciones
 from SIAT.utils.email import send_email
+from django.conf import settings
+from django.db import IntegrityError
+import jwt
+from django.contrib.auth import get_user_model
+
+Usuario = get_user_model()
 
 class AccidenteCreateView(APIView):
     # vista protegida
@@ -75,3 +81,87 @@ class AccidenteListView(generics.ListAPIView):
             'count': count,
             'accidentes': serializer.data
         })
+    
+# vista para aprobar un accidente mediante el id del accidente
+class AprobarAccidenteView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, pk, format=None):
+        try:
+            # 1. Extraer usuario del token JWT
+            auth_header = request.headers.get('Authorization', '').split()
+            if len(auth_header) != 2 or auth_header[0].lower() != 'bearer':
+                return Response(
+                    {"CODE_ERR": "INVALID_TOKEN"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            token = auth_header[1]
+            payload = jwt.decode(
+                token,
+                settings.SECRET_KEY,  # Clave secreta de Django
+                algorithms=['HS256']
+            )
+            cedula_usuario = payload.get('cedula')
+            if not cedula_usuario:
+                return Response(
+                    {"CODE_ERR": "INVALID_TOKEN"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            usuario = Usuario.objects.get(cedula=cedula_usuario)
+            # 2. Verificar si el usuario ya aprobó el accidente
+            accidente = Accidente.objects.get(pk=pk)
+            
+            if Aprobaciones.objects.filter(usuario=usuario, accidente=accidente).exists():
+                return Response(
+                    {"CODE_ERR": "ALREADY_APPROVED"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # 3.1 Verificar si el accidente ya está aprobado
+
+            if accidente.confirmado:
+                return Response(
+                    {"CODE_ERR": "ACCIDENT_ALREADY_CONFIRMED"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            # 3.2 Crear aprobación
+            Aprobaciones.objects.create(usuario=usuario, accidente=accidente)
+            
+            return Response(
+                {"message": "Accidente aprobado exitosamente"},
+                status=status.HTTP_201_CREATED
+            )
+
+        except jwt.ExpiredSignatureError:
+            return Response(
+                {"CODE_ERR": "ACCESS_TOKEN_EXPIRED"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        except jwt.DecodeError:
+            return Response(
+                {"CODE_ERR": "INVALID_TOKEN"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        except Accidente.DoesNotExist:
+            return Response(
+                {"CODE_ERR": "ACCIDENT_NOT_FOUND"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Usuario.DoesNotExist:
+            return Response(
+                {"CODE_ERR": "INVALID_USER"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        except IntegrityError:
+            return Response(
+                {"CODE_ERR": "ALREADY_APPROVED"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        except Exception as e:
+            return Response(
+                {"CODE_ERR": "INTERNAL_SERVER_ERROR"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
+    

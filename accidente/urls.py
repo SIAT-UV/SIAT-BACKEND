@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import AccidenteCreateView, AccidenteListView
+from .views import AccidenteCreateView, AccidenteListView, AprobarAccidenteView
 from .analiticas import *
 from .clusterView import ShowHighRiskView
 urlpatterns = [
@@ -14,4 +14,8 @@ urlpatterns = [
     path('accidentes/accidentByGravity', FilterSeverityOfTheAccidentView.as_view(), name='accidente-gravity'),
     path('accidentes/accidentByUser', AccidentsByUserView.as_view(), name='accidente-user'),
     path('accidentes/accidentByYear', AccidentByYear.as_view(), name='accidente-por-año'),
+    path('accidentes/<int:pk>/aprobar/',
+        AprobarAccidenteView.as_view(),
+        name='aprobar-accidente'),
+
 ]

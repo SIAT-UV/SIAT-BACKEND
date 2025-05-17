@@ -94,3 +94,14 @@ class AccidenteListSerializer(serializers.ModelSerializer):
         if obj.coordenada_geografica:
             return obj.coordenada_geografica.x
         return None
+
+
+# serializer para aprobar un accidente mediante el id del accidente
+class AprobarAccidenteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Accidente
+        fields = ('total_aprobaciones',)
+    def update(self, instance, validated_data):
+        instance.total_aprobaciones = validated_data.get('total_aprobaciones', instance.total_aprobaciones)
+        instance.save()
+        return instance

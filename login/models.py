@@ -34,6 +34,14 @@ class Usuario(AbstractUser):
         self.email = self.email.lower()
         super().save(*args, **kwargs)
 
+    def get_data(self):
+        return {
+            'first_name': self.first_name,
+            'last_name': self.last_name,
+            'cedula': self.cedula,
+            'email': self.email,
+        }
+
     def generate_otp(self):
         self.otp = f"{random.randint(100000, 999999):06d}"
         # Expira en 5 minutos, respetando zona horaria
