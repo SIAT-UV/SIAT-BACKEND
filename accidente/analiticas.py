@@ -173,6 +173,35 @@ class FilterAccidentByTypeServiceView(APIView):
                 {"error": f"Error interno del servidor: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+        
+class FilterSeverityOfTheAccidentView(APIView):
+    def get(self, request):
+        gravedad_accidente = request.GET.get('gravedad_del_accidente')
+        
+        if not gravedad_accidente:
+            return Response(
+                {"error": "Parámetro 'gravedad_del_accidente' es requerido"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        try:
+            queryset = Accidente.objects.filter(
+                confirmado=True,
+                CLASE_DE_SERVICIO__iexact=gravedad_accidente
+            )
+            serializer = AccidenteSerializer(queryset, many=True)
+            resultado = serialize_accidentes(serializer.data) 
+            
+            return Response({
+                "count": queryset.count(),
+                "results": resultado
+            }, status=status.HTTP_200_OK)
+            
+        except Exception as e:
+            return Response(
+                {"error": f"Error interno del servidor: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
 
 class AccidentsByUserView(APIView):
     permission_classes = [IsAuthenticated]
