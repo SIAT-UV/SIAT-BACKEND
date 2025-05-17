@@ -158,3 +158,50 @@ class LogoutView(APIView):
         except Exception as e:
             logger.exception(f"Error inesperado al hacer logout: {e}")
             return Response({"error": "Error al cerrar sesión"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class getDataUserView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        try:
+            auth_header = request.headers.get('Authorization', '').split()
+            if len(auth_header) != 2 or auth_header[0].lower() != 'bearer':
+                return Response(
+                    {"CODE_ERR": "INVALID_TOKEN"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            token = auth_header[1]
+            payload = jwt.decode(
+                token,
+                settings.SECRET_KEY,  # Clave secreta de Django
+                algorithms=['HS256']
+            )
+            cedula_usuario = payload.get('cedula')
+            if not cedula_usuario:
+                return Response(
+                    {"CODE_ERR": "INVALID_TOKEN"},
+                    status=status.HTTP_401_UNAUTHORIZED
+                )
+            usuario = Usuario.objects.get(cedula=cedula_usuario)
+            data = usuario.get_data()
+            return Response(data, status=status.HTTP_200_OK)
+        except jwt.ExpiredSignatureError:
+            return Response(
+                {"CODE_ERR": "ACCESS_TOKEN_EXPIRED"},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        except jwt.DecodeError:
+            return Response(
+                {"CODE_ERR": "INVALID_TOKEN"},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        except Usuario.DoesNotExist:
+            return Response(
+                {"CODE_ERR": "USER_NOT_FOUND"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            logger.exception(f"Error inesperado: {e}")
+            return Response(
+                {"CODE_ERR": "INTERNAL_SERVER_ERROR"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
