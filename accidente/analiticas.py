@@ -289,3 +289,39 @@ class AccidentByYear(APIView):
             "Total de accidentes": numAccidentes,
             "año": year
         })
+
+class AccidentByDateRange(APIView):
+    def get(self, request):
+        start_date_str = request.GET.get('start_date')
+        end_date_str = request.GET.get('end_date')
+
+        if not start_date_str or not end_date_str:
+            return Response(
+                {"CODE_ERR": "Parámetros_'start_date'_y_'end_date'_son requeridos(formato: YYYY-MM-DD)"},
+                status=400
+            )
+        
+        try:
+            # Convertir los strings a objetos date
+            start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+        except ValueError:
+            return Response(
+                {"error": "Formato de fecha inválido. Use YYYY-MM-DD."},
+                status=400
+            )
+        
+        # Filtrar por rango de fechas
+        accidentes = Accidente.objects.filter(
+            #confirmado=True,
+            FECHA__range=(start_date, end_date)
+        )
+        
+        serializer = AccidenteSerializer(accidentes, many=True)
+        
+        resultado = serialize_accidentes(serializer.data) 
+
+        return Response({
+            "count": accidentes.count(),
+            "resultados": resultado
+        })

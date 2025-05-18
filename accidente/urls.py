@@ -17,5 +17,6 @@ urlpatterns = [
     path('accidentes/<int:pk>/aprobar/',
         AprobarAccidenteView.as_view(),
         name='aprobar-accidente'),
+    path('accidentes/accidentByDate', AccidentByDateRange.as_view(), name='accidente-date'),
 
 ]
