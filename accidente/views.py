@@ -112,7 +112,33 @@ class AccidenteListViewGravity(generics.ListAPIView):
         if gravedad:
             response_data['gravedad'] = gravedad.upper()
 
-        return Response(response_data)   
+        return Response(response_data)
+class AccidenteListViewVehicle(generics.ListAPIView):
+    serializer_class = AccidenteListSerializer
+
+    def get_queryset(self):
+        # Filtrar solo los accidentes confirmados
+        queryset = Accidente.objects.filter(confirmado=True)
+        vehiculo = self.request.query_params.get('vehiculo')
+        if vehiculo:
+            queryset = queryset.filter(CLASE_DE_VEHICULO__iexact=vehiculo)
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        count = queryset.count()
+
+        # Armar la respuesta
+        response_data = {
+            'count': count,
+            'accidentes': serializer.data
+        }
+
+        vehiculo = request.query_params.get('vehiculo')
+        if vehiculo:
+            response_data['vehiculo'] = vehiculo.upper()
+        return Response(response_data)    
      
 # vista para aprobar un accidente mediante el id del accidente
 class AprobarAccidenteView(APIView):
