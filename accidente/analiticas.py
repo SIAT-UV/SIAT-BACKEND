@@ -325,3 +325,22 @@ class AccidentByDateRange(APIView):
             "count": accidentes.count(),
             "resultados": resultado
         })
+    
+
+class FilterUnconfirmedAccidentsView(APIView):
+    def get(self, request):
+        try:
+            accidentes = Accidente.objects.filter(confirmado=False).order_by('-FECHA')
+            serializer = AccidenteSerializer(accidentes, many=True)
+            resultado = serialize_accidentes(serializer.data)
+
+            return Response({
+                "count": accidentes.count(),
+                "resultados": resultado
+            }, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            return Response(
+                {"error": f"Error al obtener accidentes no confirmados: {str(e)}"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

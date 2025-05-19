@@ -18,5 +18,7 @@ urlpatterns = [
         AprobarAccidenteView.as_view(),
         name='aprobar-accidente'),
     path('accidentes/accidentByDate', AccidentByDateRange.as_view(), name='accidente-date'),
+    #se registra la vista para filtrar accidentes no confirmados
+    path('accidentes/no-confirmados/', FilterUnconfirmedAccidentsView.as_view(), name='accidentes-no-confirmados'),
 
 ]
