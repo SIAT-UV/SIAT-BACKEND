@@ -1,10 +1,11 @@
 from django.urls import path
-from .views import AccidenteCreateView, AccidenteListView, AprobarAccidenteView
+from .views import AccidenteCreateView, AccidenteListView, AprobarAccidenteView, AccidenteListViewGravity
 from .analiticas import *
 from .clusterView import ShowHighRiskView
 urlpatterns = [
     path('accidentes/', AccidenteCreateView.as_view(), name='accidente-create'),
     path('accidentes/list', AccidenteListView.as_view(), name='accidente-list'),
+    path('accidentes/gravedad/', AccidenteListViewGravity.as_view(), name='lista-accidentes'),
     path('accidentes/filterByMonth/', FilterAccidentByMonthView.as_view(), name='accidente-filter'),
     path('accidentes/countByMonth/', CountAccidentByMonthView.as_view(), name='accidente-count'),
     path('accidentes/recentlyAccident', RecentlyAccidentView.as_view(), name='accidente-recently'),
