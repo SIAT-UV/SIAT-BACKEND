@@ -325,6 +325,9 @@ class AccidentByDateRange(APIView):
             "count": accidentes.count(),
             "resultados": resultado
         })
+    
+
+
 class AccidentNoConfirmed(APIView):
     def get(self, request):
         try:
