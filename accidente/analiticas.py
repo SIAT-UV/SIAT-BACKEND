@@ -326,6 +326,8 @@ class AccidentByDateRange(APIView):
             "resultados": resultado
         })
     
+
+
 class AccidentNoConfirmed(APIView):
     def get(self, request):
         try:
