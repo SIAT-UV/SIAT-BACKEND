@@ -97,7 +97,7 @@ class RecentlyAccidentView(APIView):
     def get(self, request):
         try:
             # Obtener los últimos 3 accidentes confirmados
-            accidentes = Accidente.objects.filter().order_by('-FECHA')[:3]
+            accidentes = Accidente.objects.filter(confirmado=True).order_by('-FECHA')[:3]
             
             serializer = AccidenteSerializer(accidentes, many=True)
             
@@ -325,22 +325,21 @@ class AccidentByDateRange(APIView):
             "count": accidentes.count(),
             "resultados": resultado
         })
-    
-
-class FilterUnconfirmedAccidentsView(APIView):
+class AccidentNoConfirmed(APIView):
     def get(self, request):
         try:
-            accidentes = Accidente.objects.filter(confirmado=False).order_by('-FECHA')
+            accidentes = Accidente.objects.filter(
+                confirmado=False
+            ).order_by('-FECHA')
             serializer = AccidenteSerializer(accidentes, many=True)
-            resultado = serialize_accidentes(serializer.data)
+            resultado = serialize_accidentes(serializer.data) 
 
             return Response({
-                "count": accidentes.count(),
-                "resultados": resultado
+                "results": resultado
             }, status=status.HTTP_200_OK)
-
+            
         except Exception as e:
             return Response(
-                {"error": f"Error al obtener accidentes no confirmados: {str(e)}"},
+                {"error": f"Error al obtener accidentes: {str(e)}"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
