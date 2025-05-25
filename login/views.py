@@ -19,20 +19,16 @@ def registro_api(request):
     if serializer.is_valid():
         user = serializer.save()
         
-        # Generar tokens manualmente
-        refresh = RefreshToken.for_user(user)
+        refresh = CustomTokenObtainPairSerializer.get_token(user)
         access_token = str(refresh.access_token)
-        
-        # Crear respuesta
+
         response_data = {
-            "message": "Usuario registrado correctamente",
             "access": access_token,
             "username": f"{user.first_name} {user.last_name}",
         }
         
         response = Response(response_data, status=status.HTTP_201_CREATED)
         
-        # Configurar cookie de refresh token
         response.set_cookie(
             key='refresh_token',
             value=str(refresh),
@@ -41,6 +37,7 @@ def registro_api(request):
             samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
             max_age=settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds(),
         )
+        
         return response
     
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
